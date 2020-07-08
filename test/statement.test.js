@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import statement from '../src/statement.js'
+import statement, {htmlStatement} from '../src/statement.js'
 
 describe('statement', () => {
   let playsJson =
@@ -39,6 +39,20 @@ describe('statement', () => {
                    "You earned 47 credits\n";
 
     expect(statement(invoicesJson[0], playsJson)).to.equal(expected);
+  });
+
+  it('should print a statement in HTML document', () => {
+    let expected = "<h1>Statement for BigCo</h1>\n" +
+                   "<table>\n" +
+                   "<tr><th>play</th><th>seats</th><th>cost</th></tr>\n" +
+                   "<tr><td>Hamlet</td><td>55</td><td>$650.00</td></tr>\n" +
+                   "<tr><td>As You Like It</td><td>35</td><td>$580.00</td></tr>\n" +
+                   "<tr><td>Othello</td><td>40</td><td>$500.00</td></tr>\n" +
+                   "</table>\n" +
+                   "<p>Amount owed is <em>$1,730.00</em></p>\n" +
+                   "<p>You earned <em>47</em> credits</p>\n";
+
+    expect(htmlStatement(invoicesJson[0], playsJson)).to.equal(expected);
   });
 
 });
