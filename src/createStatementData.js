@@ -72,7 +72,6 @@ class TragedyPerformanceCalculator extends PerformanceCalculator {
 }
 
 class ComedyPerformanceCalculator extends PerformanceCalculator {
-
   get amount(){
     let result = 30000;
     if (this.performance.audience > 20) {
