@@ -6,33 +6,20 @@ export default function createStatementData(invoice, plays) {
   result.totalVolumeCredits = totalVolumeCredits(result)
   return result
   
-  function enrichPerformance(aPerformance) {
-    const result = Object.assign({}, aPerformance)
-    result.play = playFor(result)
-    result.amount = amountFor(result)
-    result.volumeCredits = volumeCreditsFor(result)
-    return result
+  function createPerformanceCalculator(aPerformance, aPlay){
+    switch (aPlay.type) {
+      case "tragedy": return new TragedyPerformanceCalculator(aPerformance, playFor(aPerformance)); break;
+      case "comedy":  return new ComedyPerformanceCalculator(aPerformance, playFor(aPerformance)); break;
+      default: throw new Error(`unknown type: ${aPlay.type}`);
+    }
   }
 
-  function amountFor(aPerformance) {
-    let result = 0
-    switch (playFor(aPerformance).type) {
-    case "tragedy":
-      result = 40000;
-      if (aPerformance.audience > 30) {
-        result += 1000 * (aPerformance.audience - 30);
-      }
-      break;
-    case "comedy":
-      result = 30000;
-      if (aPerformance.audience > 20) {
-        result += 10000 + 500 * (aPerformance.audience - 20);
-      }
-      result += 300 * aPerformance.audience;
-      break;
-    default:
-        throw new Error(`unknown type: ${playFor(aPerformance).type}`);
-    }
+  function enrichPerformance(aPerformance) {
+    const calculator = createPerformanceCalculator(aPerformance, playFor(aPerformance))
+    const result = Object.assign({}, aPerformance)
+    result.play = calculator.play
+    result.amount = calculator.amount
+    result.volumeCredits = calculator.volumeCredits
     return result
   }
 
@@ -52,14 +39,50 @@ export default function createStatementData(invoice, plays) {
     return result
   }
 
-  function volumeCreditsFor(aPerformance) {
+  function playFor(aPerformance) {
+    return plays[aPerformance.playID]
+  }
+}
+
+class PerformanceCalculator {
+  constructor(aPerformance, aPlay) {
+    this.performance = aPerformance
+    this.play = aPlay
+  }
+
+  get amount() {
+    throw new Error(`must be implemented in subclass`);
+  }
+
+  get volumeCredits() {
     let result = 0
-    result += Math.max(aPerformance.audience - 30, 0);
-    if ("comedy" === playFor(aPerformance).type) result += Math.floor(aPerformance.audience / 5);
+    result += Math.max(this.performance.audience - 30, 0);
+    return result
+  }
+}
+
+class TragedyPerformanceCalculator extends PerformanceCalculator {
+  get amount(){
+    let result = 40000;
+    if (this.performance.audience > 30) {
+      result += 1000 * (this.performance.audience - 30);
+    }
+    return result
+  }
+}
+
+class ComedyPerformanceCalculator extends PerformanceCalculator {
+
+  get amount(){
+    let result = 30000;
+    if (this.performance.audience > 20) {
+      result += 10000 + 500 * (this.performance.audience - 20);
+    }
+    result += 300 * this.performance.audience;
     return result
   }
 
-  function playFor(aPerformance) {
-    return plays[aPerformance.playID]
+  get volumeCredits(){
+    return super.volumeCredits + Math.floor(this.performance.audience / 5);
   }
 }
