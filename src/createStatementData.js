@@ -2,8 +2,8 @@ export default function createStatementData(invoice, plays) {
   let result = {}
   result.customer  = invoice.customer
   result.performances  = invoice.performances.map(enrichPerformance)
-  result.totalAmount = totalAmount(result)
-  result.totalVolumeCredits = totalVolumeCredits(result)
+  result.totalAmount = totalAmount(result.performances)
+  result.totalVolumeCredits = totalVolumeCredits(result.performances)
   return result
   
   function createPerformanceCalculator(aPerformance, aPlay){
@@ -23,17 +23,17 @@ export default function createStatementData(invoice, plays) {
     return result
   }
 
-  function totalAmount(data) {
+  function totalAmount(performances) {
     let result = 0
-    for (let perf of data.performances) {
+    for (let perf of performances) {
       result += perf.amount
     }
     return result
   }
 
-  function totalVolumeCredits(data){
+  function totalVolumeCredits(performances){
     let result = 0
-    for (let perf of data.performances) {
+    for (let perf of performances) {
       result += perf.volumeCredits
     }
     return result
